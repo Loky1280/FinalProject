@@ -16,6 +16,7 @@ public class GameViewModel : BaseViewModel
     private readonly IValidationService _validationService;
     private readonly ISaveLoadService _saveLoadService;
     private readonly IStatisticsService _statisticsService;
+    private readonly ISettingsService _settingsService;
     private readonly DispatcherTimer _gameTimer;
     private GameSession? _currentSession;
     private DateTime _lastResumeUtc;
@@ -31,7 +32,8 @@ public class GameViewModel : BaseViewModel
         CreateDefaultFactory(),
         new ValidationService(),
         CreateDefaultSaveLoadService(),
-        CreateDefaultStatisticsService())
+        CreateDefaultStatisticsService(),
+        CreateDefaultSettingsService())
     {
     }
 
@@ -39,12 +41,14 @@ public class GameViewModel : BaseViewModel
         SudokuFactory sudokuFactory,
         IValidationService validationService,
         ISaveLoadService saveLoadService,
-        IStatisticsService statisticsService)
+        IStatisticsService statisticsService,
+        ISettingsService settingsService)
     {
         _sudokuFactory = sudokuFactory ?? throw new ArgumentNullException(nameof(sudokuFactory));
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
         _saveLoadService = saveLoadService ?? throw new ArgumentNullException(nameof(saveLoadService));
         _statisticsService = statisticsService ?? throw new ArgumentNullException(nameof(statisticsService));
+        _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
 
         Difficulties = new ObservableCollection<GameDifficulty>(Enum.GetValues<GameDifficulty>());
         _selectedDifficulty = GameDifficulty.Easy;
@@ -60,6 +64,8 @@ public class GameViewModel : BaseViewModel
             Interval = TimeSpan.FromSeconds(1)
         };
         _gameTimer.Tick += OnGameTimerTick;
+
+        _ = LoadSettingsAsync();
     }
 
     public string Title => "Sudoku 9x9";
@@ -384,5 +390,23 @@ public class GameViewModel : BaseViewModel
     private static IStatisticsService CreateDefaultStatisticsService()
     {
         return new StatisticsService();
+    }
+
+    private static ISettingsService CreateDefaultSettingsService()
+    {
+        return new SettingsService();
+    }
+
+    private async Task LoadSettingsAsync()
+    {
+        try
+        {
+            var settings = await _settingsService.GetSettingsAsync();
+            SelectedDifficulty = settings.DefaultDifficulty;
+        }
+        catch
+        {
+            // Keep default values when settings are unavailable.
+        }
     }
 }

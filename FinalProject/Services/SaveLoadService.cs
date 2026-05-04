@@ -10,7 +10,9 @@ public class SaveLoadService : ISaveLoadService
 {
     private readonly JsonSerializerOptions _serializerOptions = new()
     {
-        WriteIndented = true
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
     };
 
     private readonly string _saveFilePath;
