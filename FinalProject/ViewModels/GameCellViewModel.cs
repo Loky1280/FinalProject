@@ -1,4 +1,5 @@
 using FinalProject.Models;
+using System.Windows;
 
 namespace FinalProject.ViewModels;
 
@@ -24,6 +25,13 @@ public class GameCellViewModel : BaseViewModel
     public bool IsFixed => _cell.IsFixed;
 
     public bool IsEditable => !IsFixed;
+
+    public Thickness CellBorderThickness =>
+        new(
+            left: Column % 3 == 0 ? 1.5 : 0.5,
+            top: Row % 3 == 0 ? 1.5 : 0.5,
+            right: Column == 8 ? 1.5 : 0.5,
+            bottom: Row == 8 ? 1.5 : 0.5);
 
     public string? InputValue
     {
