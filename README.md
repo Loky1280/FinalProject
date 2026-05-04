@@ -1,159 +1,195 @@
 # Sudoku Game
 
-## Description
-
-Sudoku Game — десктопний застосунок, створений на C# та WPF, який дозволяє грати в Sudoku з різними рівнями складності, збереженням прогресу та статистикою користувача.
-
----
-
-## Features
-
-- Генерація нової гри Sudoku
-- Рівні складності: Easy / Medium / Hard
-- Перевірка правильності введених значень
-- Таймер гри
-- Збереження незавершеної гри
-- Завантаження останньої гри
-- Статистика користувача
-- Налаштування застосунку
-- Зручний графічний інтерфейс
+> WPF-проєкт на C# з архітектурою **MVVM + Layered Structure**  
+> 🎯 Фокус: чистий код, патерни, підтримуваність, Git-дисципліна
 
 ---
 
-## Technologies
+## Опис
 
-- C#
-- WPF
-- .NET
-- MVVM
-- JSON Serialization
+`Sudoku Game` — десктопний застосунок, який дозволяє:
+- запускати нову гру 9x9;
+- обирати складність (`Easy / Medium / Hard`);
+- отримувати валідацію ходів;
+- користуватися таймером і паузою;
+- зберігати/завантажувати прогрес (JSON);
+- відстежувати статистику гравця;
+- керувати базовими налаштуваннями.
 
 ---
 
-## Installation / Run
+## Основні можливості
 
-1. Клонувати репозиторій:
+- ✅ Нова гра Sudoku
+- ✅ Рівні складності (через Strategy)
+- ✅ Валідація введення та конфліктів
+- ✅ Таймер + пауза/продовження
+- ✅ Save/Load поточної сесії
+- ✅ Статистика результатів
+- ✅ Налаштування гри
+- ✅ Unit-тести core логіки
+
+---
+
+## Технології
+
+- `C#`
+- `WPF`
+- `.NET 9`
+- `MVVM`
+- `System.Text.Json`
+- `xUnit`
+
+---
+
+## Запуск проєкту
 
 ```bash
 git clone <repo-url>
+cd FinalProject
+dotnet build FinalProject.sln
+dotnet run --project FinalProject/FinalProject.csproj
+```
+
+## Запуск тестів
+
+```bash
+dotnet test FinalProject.sln
+```
 
 ---
 
-## Project Overview
+## Архітектура
 
-Десктопний застосунок **Sudoku Game**, створений на **C# + WPF**.
+Обрана архітектура: **MVVM + Layered Structure**.
 
-## Chosen Architecture: MVVM + Layered Structure
-
-Для WPF це один із найкращих варіантів.
-
-### Чому саме так:
-
-- ідеально підходить під WPF Data Binding
-- UI відокремлений від логіки
-- простіше тестувати
-- код стає чистішим
-- легко масштабувати проєкт
+Чому це оптимально для WPF:
+- Data Binding природно працює з `INotifyPropertyChanged`;
+- UI відокремлений від бізнес-логіки;
+- легше масштабувати й тестувати;
+- простіше підтримувати код перед захистом/рев’ю.
 
 ---
 
-# Project Structure
+## Структура проєкту
 
 ```text
-SudokuApp/
+FinalProject/
 │
-├── Models/
-│   ├── Cell.cs
-│   ├── SudokuBoard.cs
-│   ├── GameSession.cs
-│   └── Statistics.cs
+├── FinalProject/                  # Основний WPF застосунок
+│   ├── Models/
+│   ├── ViewModels/
+│   ├── Views/
+│   ├── Services/
+│   │   └── Interfaces/
+│   ├── Commands/
+│   ├── Factories/
+│   ├── Strategies/
+│   └── Persistence/
+│       └── Contracts/
 │
-├── ViewModels/
-│   ├── MainMenuViewModel.cs
-│   ├── GameViewModel.cs
-│   ├── SettingsViewModel.cs
-│   └── StatisticsViewModel.cs
-│
-├── Views/
-│   ├── MainWindow.xaml
-│   ├── GameView.xaml
-│   ├── SettingsView.xaml
-│   └── StatisticsView.xaml
-│
-├── Services/
-│   ├── SudokuGenerator.cs
-│   ├── SudokuSolver.cs
-│   ├── SaveLoadService.cs
-│   ├── ValidationService.cs
-│   └── StatisticsService.cs
-│
-├── Commands/
-│   └── RelayCommand.cs
-│
-├── Factories/
-│   └── SudokuFactory.cs
-│
-├── Strategies/
-│   ├── EasyGenerationStrategy.cs
-│   ├── MediumGenerationStrategy.cs
-│   └── HardGenerationStrategy.cs
-│
-├── Persistence/
-│   ├── save.json
-│   ├── settings.json
-│   └── statistics.json
-│
-└── App.xaml
+└── FinalProject.Tests/            # Unit-тести
+```
 
 ---
 
-## CodeQuality
+## Де в коді реалізовано патерни
 
-## Programming Principles
+### Strategy Pattern (генерація складності)
+- Інтерфейс стратегії: [`ISudokuGenerationStrategy`](FinalProject/Strategies/ISudokuGenerationStrategy.cs)
+- Конкретні стратегії:
+  - [`EasyGenerationStrategy`](FinalProject/Strategies/EasyGenerationStrategy.cs)
+  - [`MediumGenerationStrategy`](FinalProject/Strategies/MediumGenerationStrategy.cs)
+  - [`HardGenerationStrategy`](FinalProject/Strategies/HardGenerationStrategy.cs)
+- Використання в генераторі: [`SudokuGenerator`](FinalProject/Services/SudokuGenerator.cs)
 
-### SRP — Single Responsibility Principle
-Кожен клас виконує лише одну задачу, що спрощує підтримку та зміну коду.
+### Factory Pattern (створення гри)
+- Фабрика сесій: [`SudokuFactory`](FinalProject/Factories/SudokuFactory.cs)
+- Точка створення нової гри у VM: [`GameViewModel`](FinalProject/ViewModels/GameViewModel.cs)
 
-### OCP — Open/Closed Principle
-Новий функціонал додається через розширення, а не зміну вже існуючого коду.
-
-### DIP — Dependency Inversion Principle
-Залежності будуються через інтерфейси, що робить систему гнучкішою.
-
-### DRY — Don't Repeat Yourself
-Повторюваний код виноситься у спільні методи або сервіси.
-
-### KISS — Keep It Simple Stupid
-Використовуються прості рішення без зайвого ускладнення архітектури.
-
----
-
-## Design Patterns
-
-### Strategy Pattern
-Дозволяє змінювати алгоритм генерації Sudoku залежно від складності гри.
-
-### Factory Pattern
-Централізує створення нових ігрових сесій та об'єктів Sudoku.
-
-### Observer Pattern
-Автоматично оновлює UI при зміні даних через `INotifyPropertyChanged`.
+### Observer Pattern (оновлення UI)
+- Базова реалізація: [`BaseViewModel`](FinalProject/ViewModels/BaseViewModel.cs)
+- Команди та повідомлення в UI:
+  - [`GameViewModel`](FinalProject/ViewModels/GameViewModel.cs)
+  - [`SettingsViewModel`](FinalProject/ViewModels/SettingsViewModel.cs)
+  - [`StatisticsViewModel`](FinalProject/ViewModels/StatisticsViewModel.cs)
 
 ---
 
-## Refactoring Techniques
+## SOLID / Clean Code у проєкті
 
-### Extract Method
-Великі методи розбиваються на менші та зрозуміліші частини.
+### SRP
+- Кожен сервіс має одну відповідальність:
+  - [`ValidationService`](FinalProject/Services/ValidationService.cs)
+  - [`SaveLoadService`](FinalProject/Services/SaveLoadService.cs)
+  - [`SettingsService`](FinalProject/Services/SettingsService.cs)
+  - [`StatisticsService`](FinalProject/Services/StatisticsService.cs)
 
-### Rename Method / Variable
-Зрозумілі назви покращують читабельність коду.
+### OCP
+- Додати нову складність можна через нову Strategy без змін базової логіки.
 
-### Move Method
-Методи переносяться в ті класи, де вони логічно повинні знаходитись.
+### DIP
+- Контракти винесені в інтерфейси:
+  - [`ISudokuGenerator`](FinalProject/Services/Interfaces/ISudokuGenerator.cs)
+  - [`IValidationService`](FinalProject/Services/Interfaces/IValidationService.cs)
+  - [`ISaveLoadService`](FinalProject/Services/Interfaces/ISaveLoadService.cs)
+  - [`ISettingsService`](FinalProject/Services/Interfaces/ISettingsService.cs)
+  - [`IStatisticsService`](FinalProject/Services/Interfaces/IStatisticsService.cs)
 
-### Remove Duplicate Code
-Однакова логіка об'єднується в одному місці замість копіювання.
+### DRY / KISS
+- Загальна логіка згрупована в сервіси та невеликі класи;
+- мінімум “розумного” UI-коду, основна логіка в ViewModel/Services.
 
-### Extract Class
-Великі класи розділяються на менші з окремою відповідальністю.
+---
+
+## Persistence (тільки JSON, без БД)
+
+Файлова модель збереження:
+- [`save.json`](FinalProject/Persistence/save.json)
+- [`settings.json`](FinalProject/Persistence/settings.json)
+- [`statistics.json`](FinalProject/Persistence/statistics.json)
+
+DTO-контракти:
+- [`SaveGameDto`](FinalProject/Persistence/Contracts/SaveGameDto.cs)
+- [`SaveCellDto`](FinalProject/Persistence/Contracts/SaveCellDto.cs)
+- [`SettingsDto`](FinalProject/Persistence/Contracts/SettingsDto.cs)
+- [`StatisticsDto`](FinalProject/Persistence/Contracts/StatisticsDto.cs)
+
+---
+
+## Ключові екрани
+
+- Гра: [`GameView`](FinalProject/Views/GameView.xaml)
+- Налаштування: [`SettingsView`](FinalProject/Views/SettingsView.xaml)
+- Статистика: [`StatisticsView`](FinalProject/Views/StatisticsView.xaml)
+- Навігація: [`MainMenuViewModel`](FinalProject/ViewModels/MainMenuViewModel.cs)
+
+---
+
+## Тести
+
+Тестовий проєкт: [`FinalProject.Tests`](FinalProject.Tests)
+
+Поточне покриття core-логіки:
+- [`ValidationServiceTests`](FinalProject.Tests/Services/ValidationServiceTests.cs)
+- [`StatisticsTests`](FinalProject.Tests/Models/StatisticsTests.cs)
+- [`SettingsServiceTests`](FinalProject.Tests/Services/SettingsServiceTests.cs)
+
+---
+
+## Примітка щодо Git-воркфлоу
+
+Проєкт розбивався на невеликі фічі для чистих PR:
+- `feature/project-architecture`
+- `feature/domain-models`
+- `feature/game-creation-core`
+- `feature/game-board-mvp`
+- `feature/timer-pause`
+- `feature/save-system`
+- `feature/statistics`
+- `feature/settings`
+- `feature/validation-polish`
+- `feature/ui-polish`
+- `feature/tests-core`
+
+Такий підхід добре показує контроль версій, поступову еволюцію архітектури та якісну історію комітів.
