@@ -59,7 +59,12 @@ public class SettingsService : ISettingsService
             HighlightConflicts = settings.HighlightConflicts
         };
 
-        await using var stream = File.Create(_settingsFilePath);
-        await JsonSerializer.SerializeAsync(stream, dto, _serializerOptions, cancellationToken);
+        var tempFilePath = _settingsFilePath + ".tmp";
+
+        using (var stream = File.Create(tempFilePath))
+        {
+            await JsonSerializer.SerializeAsync(stream, dto, _serializerOptions, cancellationToken);
+        } 
+        File.Move(tempFilePath, _settingsFilePath, overwrite: true);
     }
 }
