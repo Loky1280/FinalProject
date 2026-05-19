@@ -19,52 +19,69 @@ public class ValidationService : IValidationService
             return false;
         }
 
-        for (var index = 0; index < SudokuBoard.Size; index++)
-        {
-            if (index != column && board.GetCell(row, index).Value == value)
-            {
-                return false;
-            }
-
-            if (index != row && board.GetCell(index, column).Value == value)
-            {
-                return false;
-            }
-        }
-
-        var blockRowStart = row - (row % 3);
-        var blockColumnStart = column - (column % 3);
-        for (var r = blockRowStart; r < blockRowStart + 3; r++)
-        {
-            for (var c = blockColumnStart; c < blockColumnStart + 3; c++)
-            {
-                if (r == row && c == column)
-                {
-                    continue;
-                }
-
-                if (board.GetCell(r, c).Value == value)
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return !HasConflictInRow(board, row, column, value)
+               && !HasConflictInColumn(board, row, column, value)
+               && !HasConflictInBlock(board, row, column, value);
     }
 
     public bool IsBoardComplete(SudokuBoard board)
     {
         ArgumentNullException.ThrowIfNull(board);
 
-        foreach (var cell in board.Cells)
+        return board.Cells.All(cell =>
+            cell.Value != 0 &&
+            IsMoveValid(board, cell.Row, cell.Column, cell.Value));
+    }
+
+    private static bool HasConflictInRow(SudokuBoard board, int row, int column, int value)
+    {
+        for (var currentColumn = 0; currentColumn < SudokuBoard.Size; currentColumn++)
         {
-            if (cell.Value == 0 || !IsMoveValid(board, cell.Row, cell.Column, cell.Value))
+            if (currentColumn != column &&
+                board.GetCell(row, currentColumn).Value == value)
             {
-                return false;
+                return true;
             }
         }
 
-        return true;
+        return false;
+    }
+
+    private static bool HasConflictInColumn(SudokuBoard board, int row, int column, int value)
+    {
+        for (var currentRow = 0; currentRow < SudokuBoard.Size; currentRow++)
+        {
+            if (currentRow != row &&
+                board.GetCell(currentRow, column).Value == value)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool HasConflictInBlock(SudokuBoard board, int row, int column, int value)
+    {
+        var blockRowStart = row - (row % 3);
+        var blockColumnStart = column - (column % 3);
+
+        for (var currentRow = blockRowStart; currentRow < blockRowStart + 3; currentRow++)
+        {
+            for (var currentColumn = blockColumnStart; currentColumn < blockColumnStart + 3; currentColumn++)
+            {
+                if (currentRow == row && currentColumn == column)
+                {
+                    continue;
+                }
+
+                if (board.GetCell(currentRow, currentColumn).Value == value)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
