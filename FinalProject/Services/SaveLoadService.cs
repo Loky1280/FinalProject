@@ -33,8 +33,13 @@ public class SaveLoadService : ISaveLoadService
             Directory.CreateDirectory(directoryPath);
         }
 
-        await using var stream = File.Create(_saveFilePath);
-        await JsonSerializer.SerializeAsync(stream, dto, _serializerOptions, cancellationToken);
+        var tempFilePath = _saveFilePath + ".tmp";
+
+        using (var stream = File.Create(tempFilePath))
+        {
+            await JsonSerializer.SerializeAsync(stream, dto, _serializerOptions, cancellationToken);
+        } 
+        File.Move(tempFilePath, _saveFilePath, overwrite: true);
     }
 
     public async Task<GameSession?> LoadSessionAsync(CancellationToken cancellationToken = default)
